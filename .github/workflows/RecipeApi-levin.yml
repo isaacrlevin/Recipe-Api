@@ -12,18 +12,25 @@ env:
   AZURE_APIM_ID: RecipeApi
   AZURE_APIM_SERVICE_NAME: recipe-apis
   CONFIGURATION: Release
-  DOTNET_CORE_VERSION: 5.0.100-rc.2.20479.15
+  DOTNET_CORE_5_VERSION: 5.0.100-rc.2.20479.15
+  DOTNET_CORE_2_VERSION: 2.1.811
   PROJECT_PATH: RecipeApi
   API_PATH: recipes/v1
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET Core SDK ${{ env.DOTNET_CORE_VERSION }}
+    - uses: actions/checkout@v2      
+    - name: Setup .NET Core SDK ${{ env.DOTNET_CORE_5_VERSION }}
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+        dotnet-version: ${{ env.DOTNET_CORE_5_VERSION }}
+    
+    - name: Setup .NET Core SDK ${{ env.DOTNET_CORE_2_VERSION }}
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_CORE_2_VERSION }}
+    
     - name: Restore packages
       run: dotnet restore "${{ env.PROJECT_PATH }}"
     - name: Build app
