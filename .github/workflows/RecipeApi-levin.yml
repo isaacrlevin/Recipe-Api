@@ -1,0 +1,52 @@
+name: Deploy ASP.NET Core Web Application to RecipeApi-levin
+on:
+  push:
+    branches:
+    - main
+env:
+  AZURE_WEBAPP_NAME: RecipeApi-levin
+  AZURE_WEBAPP_PACKAGE_PATH: ./published
+  AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.RECIPEAPI_LEVIN_PUBLISH_PROFILE }}
+  AZURE_RESOURCE_GROUP: .NETConf
+  AZURE_WEBAPP_SERVICE_URL: https://recipeapi-levin.azurewebsites.net/
+  AZURE_APIM_ID: RecipeApi
+  AZURE_APIM_SERVICE_NAME: recipe-apis
+  CONFIGURATION: Release
+  DOTNET_CORE_VERSION: 5.0.100-rc.2.20479.15
+  PROJECT_PATH: RecipeApi
+  API_PATH: recipes/v1
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core SDK ${{ env.DOTNET_CORE_VERSION }}
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+    - name: Restore packages
+      run: dotnet restore "${{ env.PROJECT_PATH }}"
+    - name: Build app
+      run: dotnet build "${{ env.PROJECT_PATH }}" --configuration ${{ env.CONFIGURATION }} --no-restore
+    - name: Test app
+      run: dotnet test "${{ env.PROJECT_PATH }}" --no-build
+    - name: Publish app for deploy
+      run: dotnet publish "${{ env.PROJECT_PATH }}" --configuration ${{ env.CONFIGURATION }} --no-build --output "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}"
+    - name: Deploy to Azure WebApp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ env.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Install Swashbuckle CLI .NET Global Tool
+      run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version 5.6.3
+    - name: Generate Open API Specification Document
+      run: swagger tofile --output "/home/runner/work/Recipe-Api/Recipe-Api/RecipeApi/bin/Release/net5.0/win-x86/swagger.json" "/home/runner/work/Recipe-Api/Recipe-Api/RecipeApi/bin/Release/net5.0/win-x86/RecipeApi.dll" v1
+    - name: Import API into Azure API Management
+      run: |
+        az apim api import --specification-format Swagger --subscription-required false --path "${{ env.API_PATH }}" --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --service-name ${{ env.AZURE_APIM_SERVICE_NAME }} --api-id ${{ env.AZURE_APIM_ID }} --service-url ${{ env.AZURE_WEBAPP_SERVICE_URL }} --specification-path "/home/runner/work/Recipe-Api/Recipe-Api/RecipeApi/bin/Release/net5.0/swagger.json"
+        
