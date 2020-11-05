@@ -52,8 +52,10 @@ jobs:
     - name: Install Swashbuckle CLI .NET Global Tool
       run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version 5.6.3
     - name: Generate Open API Specification Document
-      run: swagger tofile --output "/home/runner/work/Recipe-Api/Recipe-Api/RecipeApi/bin/Release/net5.0/win-x86/swagger.json" "/home/runner/work/Recipe-Api/Recipe-Api/RecipeApi/bin/Release/net5.0/win-x86/RecipeApi.dll" v1
+      working-directory: /Recipe-Api/published
+      run: swagger tofile --output "swagger.json" "RecipeApi.dll" v1
     - name: Import API into Azure API Management
+      working-directory: /Recipe-Api/published
       run: |
-        az apim api import --specification-format Swagger --subscription-required false --path "${{ env.API_PATH }}" --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --service-name ${{ env.AZURE_APIM_SERVICE_NAME }} --api-id ${{ env.AZURE_APIM_ID }} --service-url ${{ env.AZURE_WEBAPP_SERVICE_URL }} --specification-path "/home/runner/work/Recipe-Api/Recipe-Api/RecipeApi/bin/Release/net5.0/swagger.json"
+        az apim api import --specification-format Swagger --subscription-required false --path "${{ env.API_PATH }}" --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --service-name ${{ env.AZURE_APIM_SERVICE_NAME }} --api-id ${{ env.AZURE_APIM_ID }} --service-url ${{ env.AZURE_WEBAPP_SERVICE_URL }} --specification-path "swagger.json"
         
