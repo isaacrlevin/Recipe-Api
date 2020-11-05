@@ -10,7 +10,7 @@ env:
   AZURE_RESOURCE_GROUP: .NETConf
   AZURE_WEBAPP_SERVICE_URL: https://recipeapi-levin.azurewebsites.net/
   AZURE_APIM_ID: RecipeApi
-  AZURE_APIM_SERVICE_NAME: recipe-apis
+  AZURE_APIM_SERVICE_NAME: RecipeApiapi
   CONFIGURATION: Release
   DOTNET_CORE_5_VERSION: 5.0.100-rc.2.20479.15
   DOTNET_CORE_2_VERSION: 3.0.103
